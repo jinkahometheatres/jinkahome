@@ -45,11 +45,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'bg-brand-black/90 backdrop-blur-md border-b border-brand-gold/20 shadow-2xl py-3'
+        isMobileMenuOpen || isScrolled
+          ? 'bg-brand-black border-b border-brand-gold/20 shadow-2xl py-3'
           : isHomePage
           ? 'bg-gradient-to-b from-brand-black/80 via-brand-black/30 to-transparent py-5'
-          : 'bg-brand-black/90 backdrop-blur-md border-b border-brand-gold/15 py-4'
+          : 'bg-brand-black border-b border-brand-gold/15 py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[60px] bg-brand-black/98 backdrop-blur-xl z-40 flex flex-col justify-between p-6 border-t border-brand-gold/20 animate-fade-in">
+        <div className="md:hidden fixed inset-0 top-[60px] bg-brand-black z-40 flex flex-col justify-between p-6 border-t border-brand-gold/20 animate-fade-in">
           <div className="flex flex-col space-y-6 pt-4">
             {navLinks.map((link) => (
               <Link
