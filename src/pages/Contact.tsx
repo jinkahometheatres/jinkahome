@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
-import { JINKA_PHONE_NUMBER, JINKA_EMAIL, JINKA_ADDRESS, JINKA_HOURS, generateGeneralConsultationWhatsAppLink } from '../utils/whatsapp';
+import { Phone, Mail, MapPin, Clock, MessageSquare, Send, CheckCircle2, Headset } from 'lucide-react';
+import { JINKA_PHONE_NUMBER, JINKA_SUPPORT_NUMBER, JINKA_EMAIL, JINKA_ADDRESS, JINKA_HOURS, generateGeneralConsultationWhatsAppLink } from '../utils/whatsapp';
 
 export const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -182,6 +182,21 @@ export const Contact: React.FC = () => {
                     <span className="text-[10px] uppercase text-slate-400 block tracking-wider">Direct Call</span>
                     <span className="text-lg font-serif text-white group-hover:text-brand-gold transition-colors">
                       +91 {JINKA_PHONE_NUMBER}
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href={`tel:${JINKA_SUPPORT_NUMBER}`}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-brand-gold transition-all group"
+                >
+                  <div className="p-3 rounded-full bg-brand-black text-brand-gold">
+                    <Headset className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase text-slate-400 block tracking-wider">Customer Support</span>
+                    <span className="text-lg font-serif text-white group-hover:text-brand-gold transition-colors">
+                      +91 {JINKA_SUPPORT_NUMBER}
                     </span>
                   </div>
                 </a>

@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CATEGORIES } from '../data/categories';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { fetchCategories } from '../services/api';
+import { Category } from '../data/products';
+import { getImageUrl } from '../utils/image';
 
 export const Categories: React.FC = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const data = await fetchCategories();
+      setCategories(data);
+      setIsLoading(false);
+    };
+    loadCategories();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-brand-gold animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-brand-black text-white pt-32 pb-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -31,14 +53,14 @@ export const Categories: React.FC = () => {
 
         {/* Categories Editorial Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {CATEGORIES.map((cat, idx) => (
+          {categories.map((cat, idx) => (
             <div
               key={cat.id}
               className="group relative overflow-hidden rounded-2xl bg-brand-card border border-white/10 hover:border-brand-gold/50 transition-all duration-500 flex flex-col justify-between"
             >
               <Link to={`/products?category=${cat.slug}`} className="block relative aspect-[16/10] overflow-hidden">
                 <img
-                  src={cat.image}
+                  src={getImageUrl(cat.image, '/assets/images/luxury_theater.png')}
                   alt={cat.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                 />
@@ -58,15 +80,9 @@ export const Categories: React.FC = () => {
                       {cat.name}
                     </h2>
                   </Link>
-                  <p className="text-xs text-slate-300 font-light leading-relaxed mb-6">
-                    {cat.description}
-                  </p>
                 </div>
 
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-xs text-slate-500 font-light">
-                    {cat.productCount} Product Models
-                  </span>
+                <div className="pt-4 border-t border-white/10 flex items-center justify-end mt-4">
                   <Link
                     to={`/products?category=${cat.slug}`}
                     className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold text-brand-gold group-hover:text-brand-gold-light"

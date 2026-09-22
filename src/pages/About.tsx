@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SERVICES } from '../data/services';
 import { Link } from 'react-router-dom';
 import { ArrowRight, PhoneCall } from 'lucide-react';
 import { generateGeneralConsultationWhatsAppLink } from '../utils/whatsapp';
+import { fetchSpecialties } from '../services/api';
+import { getImageUrl } from '../utils/image';
+
+interface SpecialtyBackend {
+  id: number;
+  name: string;
+  image: string | null;
+}
 
 export const About: React.FC = () => {
+  const [specialties, setSpecialties] = useState<SpecialtyBackend[]>([]);
+
+  useEffect(() => {
+    fetchSpecialties().then(setSpecialties);
+  }, []);
+
   const steps = [
     {
       number: "01",
@@ -85,18 +99,28 @@ export const About: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {SERVICES.map((s) => (
-            <div
-              key={s.id}
-              className="p-6 rounded-xl bg-brand-card border border-white/10 flex flex-col justify-between hover:border-brand-gold transition-colors"
-            >
-              <div>
-                <span className="text-2xl font-serif text-brand-gold/40 font-bold block mb-2">{s.number}</span>
-                <h3 className="text-lg font-serif text-white mb-2">{s.name}</h3>
-                <p className="text-xs text-slate-400 font-light line-clamp-3">{s.description}</p>
+          {SERVICES.map((s) => {
+            const backendMatch = specialties.find(b => b.name === s.name);
+            const currentImage = backendMatch?.image ? getImageUrl(backendMatch.image, '') : null;
+
+            return (
+              <div
+                key={s.id}
+                className="p-6 rounded-xl bg-brand-card border border-white/10 flex flex-col justify-between hover:border-brand-gold transition-colors relative overflow-hidden group"
+              >
+                {currentImage && (
+                  <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <img src={currentImage} alt={s.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="relative z-10">
+                  <span className="text-2xl font-serif text-brand-gold/40 font-bold block mb-2">{s.number}</span>
+                  <h3 className="text-lg font-serif text-white mb-2">{s.name}</h3>
+                  <p className="text-xs text-slate-400 font-light line-clamp-3">{s.description}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

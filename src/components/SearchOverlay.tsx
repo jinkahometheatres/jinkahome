@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, ChevronRight, ArrowRight } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
-import { CATEGORIES } from '../data/categories';
+import { fetchProducts, fetchCategories } from '../services/api';
+import { Product, Category } from '../data/products';
+import { getImageUrl } from '../utils/image';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface SearchOverlayProps {
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -20,6 +23,16 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
+
+      const loadData = async () => {
+        const [fetchedProducts, fetchedCategories] = await Promise.all([
+          fetchProducts(),
+          fetchCategories()
+        ]);
+        setProducts(fetchedProducts);
+        setCategories(fetchedCategories);
+      };
+      loadData();
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -31,16 +44,16 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
 
   const filteredProducts = query.trim() === ''
     ? []
-    : PRODUCTS.filter(
+    : products.filter(
         (p) =>
           p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.category.toLowerCase().includes(query.toLowerCase()) ||
+          (p.category?.name?.toLowerCase() || '').includes(query.toLowerCase()) ||
           p.description.toLowerCase().includes(query.toLowerCase())
       );
 
   const filteredCategories = query.trim() === ''
     ? []
-    : CATEGORIES.filter((c) =>
+    : categories.filter((c) =>
         c.name.toLowerCase().includes(query.toLowerCase())
       );
 
@@ -94,9 +107,6 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         <span className="text-sm font-serif text-white block font-medium">
                           {cat.name}
                         </span>
-                        <span className="text-[10px] text-slate-400">
-                          {cat.productCount} Products
-                        </span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-brand-gold" />
                     </button>
@@ -122,7 +132,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                       className="w-full p-4 rounded-lg bg-brand-card border border-white/10 hover:border-brand-gold text-left flex items-center gap-4 transition-all group"
                     >
                       <img
-                        src={prod.images[0]}
+                        src={getImageUrl(prod.image, "/assets/images/custom_speakers.png")}
                         alt=""
                         className="w-16 h-12 object-cover rounded bg-brand-charcoal"
                       />
@@ -131,7 +141,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                           {prod.name}
                         </span>
                         <span className="text-[11px] text-slate-400">
-                          {prod.category} • {prod.formattedPrice}
+                          {prod.category?.name || 'Category'} • ₹{Number(prod.selling_price).toLocaleString('en-IN')}
                         </span>
                       </div>
                       <ArrowRight className="w-4 h-4 text-brand-gold opacity-0 group-hover:opacity-100 transition-opacity" />

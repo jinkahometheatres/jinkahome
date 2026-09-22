@@ -1,16 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, MessageSquare, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, MessageSquare, ArrowRight, MapPin, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { generateCartWhatsAppLink } from '../utils/whatsapp';
+import { getImageUrl } from '../utils/image';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const [location, setLocation] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          // Reverse geocoding using Nominatim (OpenStreetMap)
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await response.json();
+          if (data && data.display_name) {
+            setLocation(data.display_name);
+          } else {
+            setLocation(`${latitude}, ${longitude}`);
+          }
+        } catch (error) {
+          setLocation(`${position.coords.latitude}, ${position.coords.longitude}`);
+        }
+        setIsLocating(false);
+      },
+      (error) => {
+        setIsLocating(false);
+        alert('Failed to get location. Please input manually.');
+      }
+    );
+  };
 
   const whatsappItems = cart.map((item) => ({
     name: item.product.name,
     quantity: item.quantity,
-    price: item.product.formattedPrice,
+    price: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(item.product.selling_price)),
   }));
 
   const whatsappUrl = generateCartWhatsAppLink(whatsappItems);
@@ -62,13 +95,13 @@ export const CartPage: React.FC = () => {
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto">
                     <img
-                      src={item.product.images[0]}
+                      src={getImageUrl(item.product.image, "/assets/images/custom_speakers.png")}
                       alt={item.product.name}
                       className="w-20 h-20 object-cover rounded-xl bg-brand-charcoal flex-shrink-0"
                     />
                     <div>
                       <span className="text-[10px] uppercase tracking-widest text-brand-gold font-bold">
-                        {item.product.category}
+                        {item.product.category?.name || "Category"}
                       </span>
                       <Link to={`/products/${item.product.slug}`}>
                         <h4 className="text-base font-serif font-bold text-white hover:text-brand-gold transition-colors line-clamp-1">
@@ -76,7 +109,7 @@ export const CartPage: React.FC = () => {
                         </h4>
                       </Link>
                       <span className="text-xs text-slate-400 font-light block mt-1">
-                        Est. {item.product.formattedPrice} per unit
+                        Est. ₹{Number(item.product.selling_price).toLocaleString('en-IN')} per unit
                       </span>
                     </div>
                   </div>
@@ -101,7 +134,7 @@ export const CartPage: React.FC = () => {
                     </div>
 
                     <span className="text-base font-serif font-bold text-brand-gold-light min-w-[100px] text-right">
-                      ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                    ₹{(Number(item.product.selling_price) * item.quantity).toLocaleString('en-IN')}
                     </span>
 
                     <button
@@ -158,9 +191,37 @@ export const CartPage: React.FC = () => {
                   ₹{totalPrice.toLocaleString('en-IN')}
                 </span>
               </div>
+              
+              <div className="space-y-3 border-t border-white/10 pt-4">
+                <span className="text-xs text-slate-400 uppercase tracking-widest block mb-1">Delivery Location</span>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-brand-gold" />
+                  <textarea
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Enter location or use button"
+                    className="w-full bg-brand-black/50 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold transition-colors resize-none h-16"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isLocating}
+                    className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-brand-gold hover:text-brand-gold-light transition-colors disabled:opacity-50"
+                  >
+                    {isLocating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <MapPin className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isLocating ? 'Locating...' : 'Use Current Location'}</span>
+                  </button>
+                </div>
+              </div>
 
               <a
-                href={whatsappUrl}
+                href={generateCartWhatsAppLink(whatsappItems, location)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 transition-all"

@@ -6,9 +6,10 @@ import { generateGeneralConsultationWhatsAppLink } from '../utils/whatsapp';
 
 interface NavbarProps {
   onOpenSearch: () => void;
+  onOpenBookSlot: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenBookSlot }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -122,6 +123,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
               <span>Enquire</span>
             </a>
 
+            {/* Book Slot Button */}
+            <button
+              onClick={onOpenBookSlot}
+              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold text-brand-black text-xs tracking-wider uppercase font-semibold hover:bg-brand-gold-light transition-all duration-300 shadow-sm"
+            >
+              Book Site Visit/Quotation
+            </button>
+
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -160,6 +169,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
               <PhoneCall className="w-4 h-4" />
               <span>WhatsApp Consultation</span>
             </a>
+            
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                onOpenBookSlot();
+              }}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-lg border border-brand-gold text-brand-gold font-bold uppercase tracking-wider text-sm hover:bg-brand-gold hover:text-brand-black transition-all"
+            >
+              Book Site Visit/Quotation
+            </button>
+
             <div className="text-center text-xs text-slate-400">
               <p>Direct Call: +91 8341342545</p>
               <p className="text-[10px] text-slate-500 mt-1">Dharmavaram, Sri Sathya Sai District</p>

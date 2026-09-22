@@ -1,14 +1,22 @@
-import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { PRODUCTS } from '../data/products';
+import React, { useRef, useState, useEffect } from 'react';
 import { ProductCard } from './ProductCard';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { fetchProducts } from '../services/api';
+import { Product } from '../data/products';
 
 export const FeaturedProducts: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [featured, setFeatured] = useState<Product[]>([]);
 
-  const featured = PRODUCTS.filter((p) => p.featured);
+  useEffect(() => {
+    const loadFeatured = async () => {
+      const data = await fetchProducts();
+      // For now, use the first 6 products as featured
+      setFeatured(data.slice(0, 6)); 
+    };
+    loadFeatured();
+  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -21,10 +29,12 @@ export const FeaturedProducts: React.FC = () => {
     }
   };
 
+  if (featured.length === 0) return null;
+
   return (
     <section className="py-20 sm:py-28 bg-brand-black text-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Section Header - Clean Black/White Aesthetics without Gold Text */}
+        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b border-white/10 pb-6">
           <div>
             <span className="text-xs uppercase tracking-[0.3em] font-medium text-slate-400">

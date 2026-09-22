@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PRODUCTS } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
-import { PhoneCall, ShoppingBag, CheckCircle, Shield, ArrowLeft } from 'lucide-react';
+import { PhoneCall, ShoppingBag, ArrowLeft, CheckCircle } from 'lucide-react';
 import { generateSingleProductWhatsAppLink } from '../utils/whatsapp';
 import { useCart } from '../context/CartContext';
+import { fetchProductBySlug, fetchProducts } from '../services/api';
+import { Product } from '../data/products';
+import { getImageUrl } from '../utils/image';
 
 export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const product = PRODUCTS.find((p) => p.slug === slug);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  
   const { addToCart } = useCart();
-  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+
+  useEffect(() => {
+    const loadProductAndRelated = async () => {
+      setIsLoading(true);
+      if (slug) {
+        const data = await fetchProductBySlug(slug);
+        setProduct(data);
+
+        // Fetch related products from the same category
+        if (data && data.category) {
+          const allProducts = await fetchProducts();
+          const related = allProducts.filter(
+            (p: Product) => p.category.id === data.category.id && p.id !== data.id
+          ).slice(0, 3);
+          setRelatedProducts(related);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadProductAndRelated();
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-gold"></div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -30,10 +64,16 @@ export const ProductDetail: React.FC = () => {
     );
   }
 
-  const whatsappUrl = generateSingleProductWhatsAppLink(product.name, product.formattedPrice);
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.categorySlug === product.categorySlug && p.id !== product.id
-  ).slice(0, 3);
+  const formattedOriginalPrice = new Intl.NumberFormat('en-IN', {
+    style: 'currency', currency: 'INR', maximumFractionDigits: 0
+  }).format(Number(product.original_price));
+
+  const formattedSellingPrice = new Intl.NumberFormat('en-IN', {
+    style: 'currency', currency: 'INR', maximumFractionDigits: 0
+  }).format(Number(product.selling_price));
+
+  const whatsappUrl = generateSingleProductWhatsAppLink(product.name, formattedSellingPrice);
+  const imageUrl = getImageUrl(product.image, "/assets/images/custom_speakers.png");
 
   return (
     <div className="min-h-screen bg-brand-black text-white pt-32 pb-24">
@@ -53,63 +93,43 @@ export const ProductDetail: React.FC = () => {
           <div className="lg:col-span-7 space-y-4">
             <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-brand-card border border-white/10 shadow-2xl">
               <img
-                src={product.images[selectedImageIdx] || product.images[0]}
+                src={imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-              {product.badge && (
-                <div className="absolute top-4 left-4 bg-brand-gold text-brand-black text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-                  {product.badge}
-                </div>
-              )}
             </div>
-
-            {/* Thumbnail selector if multiple images */}
-            {product.images.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImageIdx(idx)}
-                    className={`relative w-24 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImageIdx === idx ? 'border-brand-gold scale-105' : 'border-white/10 opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Note: Multiple images logic removed as requested */}
           </div>
 
           {/* Right Column: Product Information */}
           <div className="lg:col-span-5 space-y-6">
             <div>
               <span className="text-xs uppercase tracking-[0.3em] font-semibold text-brand-gold block mb-2">
-                {product.category}
+                {product.category?.name || "Category"}
               </span>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-white leading-tight">
                 {product.name}
               </h1>
-              <p className="mt-2 text-sm font-serif italic text-brand-gold-light">
-                {product.tagline}
-              </p>
             </div>
 
-            <div className="py-4 border-y border-white/10 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 block">Est. Investment</span>
-                <span className="text-2xl sm:text-3xl font-serif font-bold text-brand-gold-light">
-                  {product.formattedPrice}
-                </span>
+            <div className="py-4 border-y border-white/10 flex flex-col justify-between">
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">Pricing Details</span>
+              <div className="flex items-center gap-4">
+                <del className="text-xl sm:text-2xl font-serif text-slate-500">
+                  {formattedOriginalPrice}
+                </del>
+                {product.discount_percentage && product.discount_percentage > 0 && (
+                  <span className="bg-brand-gold/10 text-brand-gold px-2 py-1 rounded font-bold text-sm tracking-wider">
+                    {product.discount_percentage}% OFF
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-950/60 px-3 py-1.5 rounded-full border border-emerald-500/30">
-                <CheckCircle className="w-4 h-4" />
-                <span>Available for Commission</span>
-              </div>
+              <span className="text-3xl sm:text-4xl font-serif font-bold text-brand-gold-light mt-2">
+                 {formattedSellingPrice}
+              </span>
             </div>
 
-            <p className="text-sm text-slate-300 font-light leading-relaxed">
+            <p className="text-sm text-slate-300 font-light leading-relaxed whitespace-pre-wrap">
               {product.description}
             </p>
 
@@ -135,20 +155,14 @@ export const ProductDetail: React.FC = () => {
             </div>
 
             {/* Guarantees */}
-            <div className="pt-6 grid grid-cols-2 gap-4 text-xs text-slate-400 border-t border-white/10">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-brand-gold" />
-                <span>5-Year Warranty</span>
-              </div>
-              <div className="flex items-center gap-2">
+            <div className="pt-6 grid grid-cols-1 gap-4 text-xs text-slate-400 border-t border-white/10">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
                 <CheckCircle className="w-4 h-4 text-brand-gold" />
-                <span>On-Site Installation</span>
+                <span>On-Site Installation (Subject to project)</span>
               </div>
             </div>
           </div>
         </div>
-
-
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

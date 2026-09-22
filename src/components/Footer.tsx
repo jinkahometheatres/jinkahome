@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
-import { JINKA_PHONE_NUMBER, JINKA_EMAIL, JINKA_ADDRESS, JINKA_HOURS } from '../utils/whatsapp';
+import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, Headset } from 'lucide-react';
+import { JINKA_PHONE_NUMBER, JINKA_SUPPORT_NUMBER, JINKA_EMAIL, JINKA_ADDRESS, JINKA_HOURS } from '../utils/whatsapp';
 
 export const Footer: React.FC = () => {
   return (
@@ -121,6 +121,12 @@ export const Footer: React.FC = () => {
                 <Phone className="w-4 h-4 text-brand-gold flex-shrink-0" />
                 <a href={`tel:${JINKA_PHONE_NUMBER}`} className="hover:text-brand-gold transition-colors">
                   +91 {JINKA_PHONE_NUMBER}
+                </a>
+              </li>
+              <li className="flex items-center space-x-3">
+                <Headset className="w-4 h-4 text-brand-gold flex-shrink-0" />
+                <a href={`tel:${JINKA_SUPPORT_NUMBER}`} className="hover:text-brand-gold transition-colors">
+                  +91 {JINKA_SUPPORT_NUMBER} (Support)
                 </a>
               </li>
               <li className="flex items-center space-x-3">

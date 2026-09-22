@@ -1,18 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, Trash2, Plus, Minus, MessageSquare, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, Trash2, Plus, Minus, MessageSquare, ShoppingBag, ArrowRight, MapPin, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { generateCartWhatsAppLink } from '../utils/whatsapp';
+import { getImageUrl } from '../utils/image';
 
 export const CartDrawer: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice, isCartOpen, setIsCartOpen } = useCart();
+  const [location, setLocation] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          // Reverse geocoding using Nominatim (OpenStreetMap)
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await response.json();
+          if (data && data.display_name) {
+            setLocation(data.display_name);
+          } else {
+            setLocation(`${latitude}, ${longitude}`);
+          }
+        } catch (error) {
+          setLocation(`${position.coords.latitude}, ${position.coords.longitude}`);
+        }
+        setIsLocating(false);
+      },
+      (error) => {
+        setIsLocating(false);
+        alert('Failed to get location. Please input manually.');
+      }
+    );
+  };
 
   if (!isCartOpen) return null;
 
   const whatsappItems = cart.map((item) => ({
     name: item.product.name,
     quantity: item.quantity,
-    price: item.product.formattedPrice,
+    price: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(item.product.selling_price)),
   }));
 
   const whatsappUrl = generateCartWhatsAppLink(whatsappItems);
@@ -67,7 +100,7 @@ export const CartDrawer: React.FC = () => {
                   className="flex gap-4 p-4 rounded-xl bg-brand-card border border-white/10 items-center justify-between"
                 >
                   <img
-                    src={item.product.images[0]}
+                    src={getImageUrl(item.product.image, "/assets/images/custom_speakers.png")}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-lg bg-brand-charcoal"
                   />
@@ -76,7 +109,7 @@ export const CartDrawer: React.FC = () => {
                       {item.product.name}
                     </h4>
                     <span className="text-[10px] text-brand-gold block mt-0.5">
-                      {item.product.formattedPrice}
+                      ₹{Number(item.product.selling_price).toLocaleString('en-IN')}
                     </span>
 
                     {/* Quantity controls */}
@@ -116,18 +149,45 @@ export const CartDrawer: React.FC = () => {
           {/* Drawer Footer */}
           {cart.length > 0 && (
             <div className="pt-6 border-t border-white/10 space-y-4">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-sm mb-4">
                 <span className="text-slate-400 font-light">Estimated Total</span>
                 <span className="font-serif font-bold text-xl text-brand-gold-light">
                   ₹{totalPrice.toLocaleString('en-IN')}
                 </span>
               </div>
 
+              <div className="space-y-2 mb-4">
+                <div className="relative">
+                  <MapPin className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-brand-gold" />
+                  <textarea
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Location for delivery or audit"
+                    className="w-full bg-black/40 border border-white/10 rounded-md pl-8 pr-3 py-2 text-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold transition-colors resize-none h-12"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isLocating}
+                    className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-brand-gold hover:text-brand-gold-light transition-colors disabled:opacity-50"
+                  >
+                    {isLocating ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <MapPin className="w-3 h-3" />
+                    )}
+                    <span>{isLocating ? 'Locating...' : 'Use Current Location'}</span>
+                  </button>
+                </div>
+              </div>
+
               <a
-                href={whatsappUrl}
+                href={generateCartWhatsAppLink(whatsappItems, location)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs uppercase tracking-[0.2em] shadow-lg flex items-center justify-center gap-3 transition-all"
+                className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs uppercase tracking-[0.2em] shadow-lg flex items-center justify-center gap-3 transition-all"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Enquire via WhatsApp</span>

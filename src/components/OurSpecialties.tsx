@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SERVICES } from '../data/services';
 import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { fetchSpecialties } from '../services/api';
+import { getImageUrl } from '../utils/image';
+
+interface SpecialtyBackend {
+  id: number;
+  name: string;
+  image: string | null;
+}
 
 export const OurSpecialties: React.FC = () => {
+  const [backendSpecialties, setBackendSpecialties] = useState<SpecialtyBackend[]>([]);
+
+  useEffect(() => {
+    fetchSpecialties().then(setBackendSpecialties);
+  }, []);
+
   return (
     <section className="py-24 sm:py-32 bg-brand-black text-white relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -27,6 +41,9 @@ export const OurSpecialties: React.FC = () => {
         <div className="space-y-24 sm:space-y-36">
           {SERVICES.map((service, index) => {
             const isEven = index % 2 === 1;
+            const backendMatch = backendSpecialties.find(s => s.name === service.name);
+            const currentImage = backendMatch?.image ? getImageUrl(backendMatch.image, '') : service.image;
+
             return (
               <motion.div
                 key={service.id}
@@ -46,7 +63,7 @@ export const OurSpecialties: React.FC = () => {
                 >
                   <div className="relative group overflow-hidden rounded-xl border border-white/10 shadow-2xl bg-brand-charcoal">
                     <img
-                      src={service.image}
+                      src={currentImage}
                       alt={service.name}
                       className="w-full h-[350px] sm:h-[450px] md:h-[500px] object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     />

@@ -1,27 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search as SearchIcon, ChevronRight } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
-import { CATEGORIES } from '../data/categories';
 import { ProductCard } from '../components/ProductCard';
+import { fetchProducts, fetchCategories } from '../services/api';
+import { Product, Category } from '../data/products';
 
 export const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const matchingProducts = query.trim() === ''
-    ? []
-    : PRODUCTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.category.toLowerCase().includes(query.toLowerCase()) ||
-          p.description.toLowerCase().includes(query.toLowerCase())
-      );
+  useEffect(() => {
+    const loadData = async () => {
+      const [fetchedProducts, fetchedCategories] = await Promise.all([
+        fetchProducts(),
+        fetchCategories()
+      ]);
+      setProducts(fetchedProducts);
+      setCategories(fetchedCategories);
+    };
+    loadData();
+  }, []);
 
-  const matchingCategories = query.trim() === ''
-    ? []
-    : CATEGORIES.filter((c) =>
-        c.name.toLowerCase().includes(query.toLowerCase())
-      );
+  const matchingProducts = useMemo(() => {
+    if (query.trim() === '') return [];
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        (p.category?.name?.toLowerCase() || '').includes(query.toLowerCase()) ||
+        p.description.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [query, products]);
+
+  const matchingCategories = useMemo(() => {
+    if (query.trim() === '') return [];
+    return categories.filter((c) =>
+      c.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [query, categories]);
 
   return (
     <div className="min-h-screen bg-brand-black text-white pt-32 pb-24">
@@ -69,9 +85,6 @@ export const SearchPage: React.FC = () => {
                         <h4 className="text-lg font-serif text-white group-hover:text-brand-gold transition-colors">
                           {cat.name}
                         </h4>
-                        <span className="text-xs text-slate-400 font-light mt-1 block">
-                          {cat.productCount} Product Models
-                        </span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-brand-gold" />
                     </Link>

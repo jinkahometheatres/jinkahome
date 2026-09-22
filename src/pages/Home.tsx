@@ -11,7 +11,7 @@ import { GalleryPreview } from '../components/GalleryPreview';
 import { FinalCTA } from '../components/FinalCTA';
 
 interface HomeProps {
-  onSelectGalleryImage?: (image: string, title: string, desc: string) => void;
+  onSelectGalleryImage?: (image: string, title?: string, desc?: string) => void;
 }
 
 export const Home: React.FC<HomeProps> = ({ onSelectGalleryImage }) => {

@@ -7,6 +7,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { SearchOverlay } from './components/SearchOverlay';
 import { CartDrawer } from './components/CartDrawer';
 import { GalleryLightbox } from './components/GalleryLightbox';
+import { BookSlotModal } from './components/BookSlotModal';
 
 // Pages
 import { Home } from './pages/Home';
@@ -30,6 +31,7 @@ const ScrollToTop: React.FC = () => {
 
 export const AppContent: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isBookSlotOpen, setIsBookSlotOpen] = useState(false);
   const [lightboxState, setLightboxState] = useState<{
     image: string | null;
     title?: string;
@@ -49,7 +51,7 @@ export const AppContent: React.FC = () => {
       <ScrollToTop />
 
       {/* Global Header Navigation */}
-      <Navbar onOpenSearch={() => setIsSearchOpen(true)} />
+      <Navbar onOpenSearch={() => setIsSearchOpen(true)} onOpenBookSlot={() => setIsBookSlotOpen(true)} />
 
       {/* Main Content Router */}
       <main className="flex-grow">
@@ -74,6 +76,7 @@ export const AppContent: React.FC = () => {
 
       {/* Global Interactive Overlays */}
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <BookSlotModal isOpen={isBookSlotOpen} onClose={() => setIsBookSlotOpen(false)} />
       <CartDrawer />
       <GalleryLightbox
         image={lightboxState.image}

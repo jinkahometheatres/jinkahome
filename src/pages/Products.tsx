@@ -1,31 +1,57 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PRODUCTS } from '../data/products';
-import { CATEGORIES } from '../data/categories';
 import { ProductCard } from '../components/ProductCard';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { fetchProducts, fetchCategories } from '../services/api';
+import { Product, Category } from '../data/products';
 
 export const Products: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategorySlug = searchParams.get('category') || 'all';
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const [fetchedProducts, fetchedCategories] = await Promise.all([
+        fetchProducts(),
+        fetchCategories()
+      ]);
+      setProducts(fetchedProducts);
+      setCategories(fetchedCategories);
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       const matchesCategory =
-        selectedCategorySlug === 'all' || product.categorySlug === selectedCategorySlug;
+        selectedCategorySlug === 'all' || product.category.slug === selectedCategorySlug;
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
+      if (sortBy === 'price-asc') return Number(a.selling_price) - Number(b.selling_price);
+      if (sortBy === 'price-desc') return Number(b.selling_price) - Number(a.selling_price);
       if (sortBy === 'name') return a.name.localeCompare(b.name);
-      return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      return 0; // Backend handles default ordering based on created_at
     });
-  }, [selectedCategorySlug, searchQuery, sortBy]);
+  }, [products, selectedCategorySlug, searchQuery, sortBy]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-brand-gold animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-black text-white pt-32 pb-24">
@@ -55,9 +81,9 @@ export const Products: React.FC = () => {
                   : 'bg-white/5 text-slate-300 hover:bg-white/10'
               }`}
             >
-              All Systems ({PRODUCTS.length})
+              All Systems ({products.length})
             </button>
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSearchParams({ category: cat.slug })}
@@ -92,7 +118,7 @@ export const Products: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-2"
               >
-                <option value="featured" className="bg-brand-black text-white">Featured</option>
+                <option value="featured" className="bg-brand-black text-white">Latest</option>
                 <option value="price-asc" className="bg-brand-black text-white">Price: Low to High</option>
                 <option value="price-desc" className="bg-brand-black text-white">Price: High to Low</option>
                 <option value="name" className="bg-brand-black text-white">Name</option>

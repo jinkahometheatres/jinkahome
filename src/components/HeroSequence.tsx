@@ -218,22 +218,23 @@ export const HeroSequence: React.FC = () => {
             >
               <span className="w-2 h-2 rounded-full bg-brand-gold animate-pulse" />
               <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.3em] font-semibold text-brand-gold-light">
-                Luxury Home Theater Craftsmen
+                Luxury Home Theatre Craftsman
               </span>
             </motion.div>
 
-            {/* Main Brand Heading */}
-            <motion.h1
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
+            {/* Main Brand Logo */}
+            <motion.div
+              initial={{ opacity: 0, y: 25, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 1, delay: 0.4 }}
-              className="text-3xl sm:text-6xl md:text-7xl lg:text-8xl font-serif tracking-tight font-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.95)] leading-[1.1]"
+              className="my-4 sm:my-8 flex justify-center"
             >
-              JINKA <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cream via-brand-gold-light to-brand-gold italic">
-                HOME THEATERS
-              </span>
-            </motion.h1>
+              <img
+                src="/assets/logo.png"
+                alt="JINKA HOME THEATERS"
+                className="h-24 sm:h-40 md:h-52 lg:h-64 xl:h-72 w-auto object-contain drop-shadow-[0_10px_40px_rgba(0,0,0,0.95)]"
+              />
+            </motion.div>
 
             {/* Tagline */}
             <motion.p
