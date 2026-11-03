@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get(
     "django-insecure-local-development-only-change-this"
 )
 
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+DEBUG=False
 
 ALLOWED_HOSTS = [
     host.strip()
