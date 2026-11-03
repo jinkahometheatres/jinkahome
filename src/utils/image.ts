@@ -1,5 +1,9 @@
-export const getImageUrl = (imagePath: string | null | undefined, fallback: string): string => {
+export const getImageUrl = (
+  imagePath: string | null | undefined,
+  fallback: string
+): string => {
   if (!imagePath) return fallback;
   if (imagePath.startsWith('http')) return imagePath;
-  return `http://localhost:8000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+
+  return `https://jinkahome.onrender.com${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
 };
