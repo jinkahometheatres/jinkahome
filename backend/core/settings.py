@@ -138,7 +138,7 @@ AWS_S3_FILE_OVERWRITE = False
 
 AWS_S3_CUSTOM_DOMAIN = (
     "yrlthiutredlbmdvxnhe.supabase.co/"
-    "storage/v1/object/public/media"
+    "storage/v1/object/public/Media"
 )
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 # CORS
