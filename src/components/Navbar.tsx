@@ -37,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenBookSlot }) 
     { name: 'PRODUCTS', path: '/products' },
     { name: 'CATEGORIES', path: '/categories' },
     { name: 'ABOUT', path: '/about' },
+    { name: 'REVIEWS', path: '/#reviews' },
     { name: 'GALLERY', path: '/gallery' },
     { name: 'CONTACT', path: '/contact' },
   ];
@@ -72,6 +73,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenBookSlot }) 
                 <Link
                   key={link.name}
                   to={link.path}
+                  onClick={(e) => {
+                    if (link.path.startsWith('/#') && location.pathname === '/') {
+                      const id = link.path.split('#')[1];
+                      const el = document.getElementById(id);
+                      if (el) {
+                        e.preventDefault();
+                        el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }
+                  }}
                   className={`text-xs uppercase tracking-[0.2em] font-medium transition-all duration-300 relative py-1 ${
                     isActive
                       ? 'text-brand-gold font-semibold'
@@ -151,6 +162,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenBookSlot }) 
               <Link
                 key={link.name}
                 to={link.path}
+                onClick={(e) => {
+                  if (link.path.startsWith('/#') && location.pathname === '/') {
+                    const id = link.path.split('#')[1];
+                    const el = document.getElementById(id);
+                    if (el) {
+                      e.preventDefault();
+                      el.scrollIntoView({ behavior: 'smooth' });
+                      setIsMobileMenuOpen(false);
+                    }
+                  } else {
+                    // Fallback to auto close which is also handled by useEffect, but this makes it immediate
+                    setIsMobileMenuOpen(false);
+                  }
+                }}
                 className="flex items-center justify-between text-lg uppercase tracking-widest text-slate-200 hover:text-brand-gold py-2 border-b border-white/5"
               >
                 <span>{link.name}</span>

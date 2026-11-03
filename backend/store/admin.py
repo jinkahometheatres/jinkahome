@@ -1,6 +1,6 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
-from .models import Category, Product, Specialty, GalleryImage
+from .models import Category, Product, Specialty, GalleryImage, Review
 
 @admin.register(Category)
 class CategoryAdmin(ModelAdmin):
@@ -25,3 +25,9 @@ class SpecialtyAdmin(ModelAdmin):
 class GalleryImageAdmin(ModelAdmin):
     list_display = ['category', 'created_at']
     list_filter = ['category', 'created_at']
+
+@admin.register(Review)
+class ReviewAdmin(ModelAdmin):
+    list_display = ['name', 'is_approved', 'created_at']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['name', 'text']

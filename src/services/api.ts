@@ -54,3 +54,48 @@ export const fetchGallery = async () => {
     return [];
   }
 };
+
+export const fetchReviews = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews/`);
+    if (!response.ok) throw new Error('Failed to fetch reviews');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+};
+
+export const createReview = async (data: { name: string; text: string }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create review');
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating review:', error);
+    return null;
+  }
+};
+
+export const updateReview = async (id: number, data: { name: string; text: string }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews/${id}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update review');
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating review:', error);
+    return null;
+  }
+};

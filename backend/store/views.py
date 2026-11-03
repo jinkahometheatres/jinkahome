@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Category, Product, Specialty, GalleryImage
-from .serializers import CategorySerializer, ProductSerializer, SpecialtySerializer, GalleryImageSerializer
+from .models import Category, Product, Specialty, GalleryImage, Review
+from .serializers import CategorySerializer, ProductSerializer, SpecialtySerializer, GalleryImageSerializer, ReviewSerializer
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -18,3 +18,8 @@ class SpecialtyViewSet(viewsets.ReadOnlyModelViewSet):
 class GalleryImageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = GalleryImage.objects.all()
     serializer_class = GalleryImageSerializer
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    # Only return approved reviews
+    queryset = Review.objects.filter(is_approved=True)
+    serializer_class = ReviewSerializer

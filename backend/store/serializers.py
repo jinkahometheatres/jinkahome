@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Product, Specialty, GalleryImage
+from .models import Category, Product, Specialty, GalleryImage, Review
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +30,9 @@ class GalleryImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryImage
         fields = ['id', 'category', 'image', 'created_at']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'name', 'text', 'is_approved', 'created_at', 'updated_at']
+        read_only_fields = ['is_approved', 'created_at', 'updated_at']
